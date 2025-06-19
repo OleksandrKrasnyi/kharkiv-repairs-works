@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: kharkiv-repairs
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PYTHONPATH
+        value: /app
+      - key: PYTHONUNBUFFERED
+        value: '1'
+      - key: ENVIRONMENT
+        value: production
+    buildCommand: ''
+    startCommand: python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health

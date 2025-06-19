@@ -1,0 +1,34 @@
+{
+  "name": "kharkiv-repairs-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend tooling for Kharkiv Repairs project",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint frontend/src/**/*.{js,vue}",
+    "lint:fix": "eslint frontend/src/**/*.{js,vue} --fix",
+    "format": "prettier --write frontend/src/**/*.{js,vue} frontend/**/*.css",
+    "format:check": "prettier --check frontend/src/**/*.{js,vue} frontend/**/*.css",
+    "check:all": "npm run lint && npm run format:check",
+    "fix:all": "npm run lint:fix && npm run format"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.9.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "eslint": "^9.9.0",
+    "eslint-plugin-vue": "^9.27.0",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.3",
+    "vite": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
