@@ -156,6 +156,26 @@ async def read_root():
     return FileResponse("frontend/dist/index.html")
 
 
+# SPA fallback - возвращаем index.html для всех неизвестных путей
+@app.get("/{path:path}", include_in_schema=False)
+async def spa_fallback(path: str):
+    """Fallback для Vue Router - возвращает index.html для клиентских роутов"""
+    # Проверяем, что путь не начинается с /api/, /static/, /assets/, /health, /docs, /redoc
+    if not (
+        path.startswith("api/") or
+        path.startswith("static/") or 
+        path.startswith("assets/") or
+        path in ["health", "docs", "redoc", "openapi.json"]
+    ):
+        return FileResponse("frontend/dist/index.html")
+    
+    # Для остальных путей возвращаем 404
+    return JSONResponse(
+        status_code=404,
+        content={"error": True, "message": "Not found"}
+    )
+
+
 # Health check
 @app.get("/health", tags=["System"])
 async def health_check():

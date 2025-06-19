@@ -109,8 +109,10 @@ export default {
         let geometry;
         if (result.street_key) {
           // Используем специальный метод API с ключом
+          const baseUrl =
+            window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
           const response = await fetch(
-            `http://localhost:8000/api/v1/streets/fast-geometry/${encodeURIComponent(result.street_name)}?street_key=${encodeURIComponent(result.street_key)}`
+            `${baseUrl}/api/v1/streets/fast-geometry/${encodeURIComponent(result.street_name)}?street_key=${encodeURIComponent(result.street_key)}`
           );
           geometry = response.ok ? await response.json() : null;
         } else {
