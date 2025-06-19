@@ -55,7 +55,7 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 COPY frontend/static/data/ ./frontend/static/data/
 
 # Создание директории для базы данных
-RUN mkdir -p /app/db
+RUN mkdir -p /app/db && chmod 755 /app/db
 
 # Создание пользователя для безопасности
 RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
@@ -65,6 +65,9 @@ USER app
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
+ENV ENVIRONMENT=production
+ENV DATABASE_TYPE=sqlite
+ENV SQLITE_DATABASE_PATH=/app/db/app.db
 
 # Здоровье контейнера (Railway делает свой healthcheck)
 # HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
@@ -76,5 +79,12 @@ EXPOSE $PORT
 # Отладочная информация перед запуском
 RUN echo "Checking application structure..." && ls -la backend/app/ && ls -la frontend/
 
-# Команда запуска (используем переменную PORT от Railway)
-CMD echo "Starting app on port ${PORT:-8000}..." && uv run python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} 
+# Команда запуска с отладкой
+CMD echo "=== Railway Deploy Debug ===" && \
+    echo "PORT: ${PORT:-8000}" && \
+    echo "ENVIRONMENT: ${ENVIRONMENT}" && \
+    echo "PYTHONPATH: ${PYTHONPATH}" && \
+    ls -la /app && \
+    ls -la /app/db && \
+    echo "Starting uvicorn..." && \
+    uv run python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level debug 
