@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import { useMap } from '../composables/useMap.js';
 import { useApi } from '../composables/useApi.js';
 import { useNotifications } from '../composables/useNotifications.js';
@@ -176,6 +176,36 @@ export default {
       if (!newQuery.trim()) {
         searchResults.value = [];
       }
+    });
+
+    // 🎯 Обработчики событий от других компонентов
+    const handleStreetSelected = event => {
+      const { streetName } = event.detail;
+      searchQuery.value = streetName;
+      searchResults.value = [];
+      console.log(
+        `🎯 StreetSearch: Получено уведомление о выборе улицы: ${streetName}`
+      );
+    };
+
+    const handleStreetCleared = () => {
+      searchQuery.value = '';
+      searchResults.value = [];
+      console.log('🎯 StreetSearch: Получено уведомление об очистке улицы');
+    };
+
+    // 🎯 Подписка на события при монтировании компонента
+    onMounted(() => {
+      window.addEventListener('streetSelected', handleStreetSelected);
+      window.addEventListener('streetCleared', handleStreetCleared);
+      console.log('🎯 StreetSearch: Подписался на события улиц');
+    });
+
+    // 🎯 Отписка от событий при размонтировании
+    onUnmounted(() => {
+      window.removeEventListener('streetSelected', handleStreetSelected);
+      window.removeEventListener('streetCleared', handleStreetCleared);
+      console.log('🎯 StreetSearch: Отписался от событий улиц');
     });
 
     return {
