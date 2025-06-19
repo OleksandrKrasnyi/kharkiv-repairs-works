@@ -149,6 +149,20 @@ app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
 app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 
+# Health check (ВАЖНО: должен быть ПЕРЕД fallback роутом)
+@app.get("/health", tags=["System"])
+async def health_check():
+    """Проверка состояния системы"""
+    db_status = check_db_connection()
+
+    return {
+        "status": "healthy" if db_status else "unhealthy",
+        "database": "connected" if db_status else "disconnected",
+        "environment": settings.environment,
+        "version": settings.app_version,
+    }
+
+
 # Главная страница
 @app.get("/", include_in_schema=False)
 async def read_root():
@@ -157,6 +171,7 @@ async def read_root():
 
 
 # SPA fallback - возвращаем index.html для всех неизвестных путей
+# ВАЖНО: Должен быть ПОСЛЕДНИМ среди GET роутов!
 @app.get("/{path:path}", include_in_schema=False)
 async def spa_fallback(path: str):
     """Fallback для Vue Router - возвращает index.html для клиентских роутов"""
@@ -174,20 +189,6 @@ async def spa_fallback(path: str):
         status_code=404,
         content={"error": True, "message": "Not found"}
     )
-
-
-# Health check
-@app.get("/health", tags=["System"])
-async def health_check():
-    """Проверка состояния системы"""
-    db_status = check_db_connection()
-
-    return {
-        "status": "healthy" if db_status else "unhealthy",
-        "database": "connected" if db_status else "disconnected",
-        "environment": settings.environment,
-        "version": settings.app_version,
-    }
 
 
 # Информация о системе (только в dev режиме)
