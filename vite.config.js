@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [vue()],
   root: 'frontend',
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true
   },
   server: {

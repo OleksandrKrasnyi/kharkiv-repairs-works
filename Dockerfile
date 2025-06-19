@@ -10,8 +10,13 @@ RUN npm ci
 COPY frontend/ ./frontend/
 COPY vite.config.js ./
 
+# Отладочная информация
+RUN ls -la
+RUN ls -la frontend/
+RUN npm list vite || echo "Vite not found in dependencies"
+
 # Сборка frontend
-RUN npm run build
+RUN npx vite build
 
 # Python backend stage
 FROM python:3.11-slim AS backend
