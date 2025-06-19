@@ -66,12 +66,15 @@ ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
-# Здоровье контейнера
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:$PORT/health || exit 1
+# Здоровье контейнера (Railway делает свой healthcheck)
+# HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+#   CMD curl -f http://localhost:$PORT/health || exit 1
 
 # Экспорт порта
 EXPOSE $PORT
 
-# Команда запуска через uv
-CMD ["uv", "run", "python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Отладочная информация перед запуском
+RUN echo "Checking application structure..." && ls -la backend/app/ && ls -la frontend/
+
+# Команда запуска (используем переменную PORT от Railway)
+CMD echo "Starting app on port ${PORT:-8000}..." && uv run python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} 
