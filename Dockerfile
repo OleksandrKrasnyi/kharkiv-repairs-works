@@ -25,20 +25,27 @@ FROM python:3.11-slim AS backend
 # Установка системных зависимостей
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
+# Установка uv
+RUN pip install --no-cache-dir uv
+
 # Создание рабочей директории
 WORKDIR /app
 
-# Копирование конфигурации
+# Копирование конфигурации uv
 COPY pyproject.toml ./
+COPY uv.lock ./
+
+# Копирование исходного кода
 COPY backend/ ./backend/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
 
-# Установка Python зависимостей  
-RUN pip install --no-cache-dir --upgrade pip
+# Отладочная информация  
 RUN ls -la  
 RUN cat pyproject.toml | head -20
-RUN pip install --no-cache-dir -e .
+
+# Установка зависимостей через uv
+RUN uv sync --no-dev
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
@@ -65,5 +72,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 # Экспорт порта
 EXPOSE $PORT
 
-# Команда запуска
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Команда запуска через uv
+CMD ["uv", "run", "python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
