@@ -46,7 +46,7 @@ RUN ls -la
 RUN cat pyproject.toml | head -20
 
 # Установка зависимостей через uv (основные пакеты)
-RUN uv pip install --system fastapi uvicorn[standard] sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely aiofiles
+RUN uv pip install --system fastapi uvicorn[standard] sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely aiofiles aiohttp fuzzywuzzy numpy
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
