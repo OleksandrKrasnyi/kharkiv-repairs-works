@@ -16,8 +16,9 @@ RUN ls -la
 RUN ls -la frontend/
 RUN npm list vite || echo "Vite not found in dependencies"
 
-# Сборка frontend (с ограничениями памяти для облака)
-RUN NODE_OPTIONS="--max-old-space-size=1024" npx vite build
+# Сборка frontend (минимальные требования к памяти)
+ENV NODE_OPTIONS="--max-old-space-size=384"
+RUN npx vite build --mode production
 
 # Python backend stage
 FROM python:3.11-slim AS backend
@@ -45,7 +46,7 @@ RUN ls -la
 RUN cat pyproject.toml | head -20
 
 # Установка зависимостей через uv
-RUN uv sync --no-dev
+RUN uv pip install --system fastapi uvicorn sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
