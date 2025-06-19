@@ -69,8 +69,8 @@ dmypy.json
 # Ruff
 .ruff_cache/
 
-# UV package manager
-uv.lock
+# UV package manager (оставляем uv.lock для воспроизводимых сборок)
+# uv.lock
 
 # ===============================
 # NODE.JS / FRONTEND
