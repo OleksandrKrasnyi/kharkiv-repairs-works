@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-echo "=== Railway Startup Script ==="
-echo "Starting application on port 8000 (ignoring PORT variable due to Railway bug)"
+# Determine port to listen on (Railway sets $PORT)
+PORT=${PORT:-8000}
 
-# Запускаем приложение на фиксированном порту 8000
-exec python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --log-level info 
+echo "=== Railway Startup Script ==="
+echo "Starting application on port $PORT"
+
+# Launch the application
+exec python -m uvicorn backend.app.main:app --host 0.0.0.0 --port "$PORT" --log-level info 
