@@ -1,4 +1,5 @@
 # Multi-stage build для оптимизации размера
+# Version: 2024-12-28-v2 - Fixed Vite build with npx
 FROM node:18-alpine AS frontend-builder
 
 # Установка зависимостей frontend
