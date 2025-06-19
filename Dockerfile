@@ -16,8 +16,8 @@ RUN ls -la
 RUN ls -la frontend/
 RUN npm list vite || echo "Vite not found in dependencies"
 
-# Сборка frontend
-RUN npx vite build
+# Сборка frontend (с ограничениями памяти для облака)
+RUN NODE_OPTIONS="--max-old-space-size=1024" npx vite build
 
 # Python backend stage
 FROM python:3.11-slim AS backend
@@ -28,14 +28,17 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # Создание рабочей директории
 WORKDIR /app
 
-# Установка Python зависимостей
+# Копирование конфигурации
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e .
-
-# Копирование backend кода
 COPY backend/ ./backend/
 COPY alembic/ ./alembic/
 COPY alembic.ini ./
+
+# Установка Python зависимостей  
+RUN pip install --no-cache-dir --upgrade pip
+RUN ls -la  
+RUN cat pyproject.toml | head -20
+RUN pip install --no-cache-dir -e .
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
