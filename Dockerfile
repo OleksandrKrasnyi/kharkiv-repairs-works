@@ -2,21 +2,22 @@
 FROM node:18-alpine AS frontend-builder
 
 # Установка зависимостей frontend
-WORKDIR /app/frontend
+WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm ci
+
+# Копирование исходников frontend
+COPY frontend/ ./frontend/
+COPY vite.config.js ./
 
 # Сборка frontend
-COPY frontend/ ./
 RUN npm run build
 
 # Python backend stage
 FROM python:3.11-slim AS backend
 
 # Установка системных зависимостей
-RUN apt-get update && apt-get install -y \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 # Создание рабочей директории
 WORKDIR /app

@@ -144,15 +144,16 @@ app.include_router(
 app.include_router(streets.router, prefix="/api/v1/streets", tags=["Streets"])
 
 
-# Статические файлы
+# Статические файлы  
 app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 
 # Главная страница
 @app.get("/", include_in_schema=False)
 async def read_root():
     """Главная страница приложения"""
-    return FileResponse("frontend/index.html")
+    return FileResponse("frontend/dist/index.html")
 
 
 # Health check
