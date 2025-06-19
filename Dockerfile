@@ -73,6 +73,10 @@ ENV ENVIRONMENT=production
 ENV DATABASE_TYPE=sqlite
 ENV SQLITE_DATABASE_PATH=/app/db/app.db
 
+# Принудительное обновление кеша (изменяем при каждом деплое)
+ARG CACHE_BUST=2024-12-28-v3
+RUN echo "Cache bust: $CACHE_BUST"
+
 # Здоровье контейнера (Railway делает свой healthcheck)
 # HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
 #   CMD curl -f http://localhost:$PORT/health || exit 1
