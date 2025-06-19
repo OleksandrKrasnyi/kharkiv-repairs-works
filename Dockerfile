@@ -74,7 +74,7 @@ ENV DATABASE_TYPE=sqlite
 ENV SQLITE_DATABASE_PATH=/app/db/app.db
 
 # Принудительное обновление кеша (изменяем при каждом деплое)
-ARG CACHE_BUST=2024-12-28-v3
+ARG CACHE_BUST=2024-12-28-v4-fixed-port
 RUN echo "Cache bust: $CACHE_BUST"
 
 # Здоровье контейнера (Railway делает свой healthcheck)
