@@ -5,7 +5,7 @@
     "dockerfile": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "uv run python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT",
+    "startCommand": "python -m uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 30,
     "restartPolicyType": "ON_FAILURE",

@@ -45,8 +45,8 @@ COPY alembic.ini ./
 RUN ls -la  
 RUN cat pyproject.toml | head -20
 
-# Установка зависимостей через uv
-RUN uv pip install --system fastapi uvicorn sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely
+# Установка зависимостей через uv (основные пакеты)
+RUN uv pip install --system fastapi uvicorn[standard] sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely aiofiles
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
@@ -57,9 +57,9 @@ COPY frontend/static/data/ ./frontend/static/data/
 # Создание директории для базы данных
 RUN mkdir -p /app/db && chmod 755 /app/db
 
-# Создание пользователя для безопасности
-RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
-USER app
+# Создание пользователя для безопасности (отключаем для отладки)
+# RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
+# USER app
 
 # Переменные окружения
 ENV PYTHONPATH=/app
@@ -79,12 +79,18 @@ EXPOSE $PORT
 # Отладочная информация перед запуском
 RUN echo "Checking application structure..." && ls -la backend/app/ && ls -la frontend/
 
-# Команда запуска с отладкой
+# Команда запуска с максимальной отладкой
 CMD echo "=== Railway Deploy Debug ===" && \
     echo "PORT: ${PORT:-8000}" && \
     echo "ENVIRONMENT: ${ENVIRONMENT}" && \
     echo "PYTHONPATH: ${PYTHONPATH}" && \
-    ls -la /app && \
-    ls -la /app/db && \
-    echo "Starting uvicorn..." && \
-    uv run python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level debug 
+    echo "Python version: $(python --version)" && \
+    echo "Python path: $(which python)" && \
+    echo "UV version: $(uv --version)" && \
+    echo "Files in /app:" && ls -la /app && \
+    echo "Files in /app/backend:" && ls -la /app/backend && \
+    echo "Files in /app/db:" && ls -la /app/db && \
+    echo "Python packages:" && python -c "import sys; print(sys.path)" && \
+    echo "Testing import..." && python -c "import backend.app.main; print('Import successful')" && \
+    echo "Starting uvicorn directly..." && \
+    python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-8000} --log-level debug 
