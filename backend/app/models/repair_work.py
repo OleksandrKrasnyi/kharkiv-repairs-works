@@ -13,6 +13,7 @@ from ..database import Base
 
 if TYPE_CHECKING:
     from .work_type import WorkType
+    from .repair_work_photo import RepairWorkPhoto
 
 
 class WorkStatus(str, enum.Enum):
@@ -77,6 +78,11 @@ class RepairWork(Base):
     )
     work_type: Mapped[Optional["WorkType"]] = relationship(
         "WorkType", back_populates="repair_works"
+    )
+    
+    # Связь с фотографиями
+    photos: Mapped[list["RepairWorkPhoto"]] = relationship(
+        "RepairWorkPhoto", back_populates="repair_work", cascade="all, delete-orphan"
     )
 
     # Метаданные

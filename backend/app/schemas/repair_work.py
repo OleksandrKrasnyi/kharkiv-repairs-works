@@ -4,11 +4,14 @@ Pydantic схемы для ремонтных работ
 
 from datetime import datetime
 from enum import Enum
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .work_type import WorkTypeResponse
+
+if TYPE_CHECKING:
+    from .repair_work_photo import RepairWorkPhoto
 
 
 class WorkStatus(str, Enum):
@@ -202,3 +205,6 @@ class RepairWorkDetailed(RepairWorkResponse):
     work_type: WorkTypeResponse | None = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+

@@ -46,7 +46,7 @@ RUN ls -la
 RUN cat pyproject.toml | head -20
 
 # Установка зависимостей через uv (основные пакеты)
-RUN uv pip install --system fastapi uvicorn[standard] sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely aiofiles aiohttp fuzzywuzzy numpy python-levenshtein
+RUN uv pip install --system fastapi uvicorn[standard] sqlalchemy alembic pydantic pydantic-settings python-dotenv structlog shapely aiofiles aiohttp fuzzywuzzy numpy python-levenshtein python-multipart
 
 # Копирование собранного frontend
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
@@ -58,8 +58,9 @@ COPY frontend/static/data/ ./frontend/static/data/
 COPY start.sh ./
 RUN chmod +x start.sh
 
-# Создание директории для базы данных
+# Создание директорий для базы данных и загрузок
 RUN mkdir -p /app/db && chmod 755 /app/db
+RUN mkdir -p /app/uploads/repair_work_photos && chmod 755 /app/uploads
 
 # Создание пользователя для безопасности (отключаем для отладки)
 # RUN useradd --create-home --shell /bin/bash app && chown -R app:app /app
@@ -72,9 +73,10 @@ ENV PORT=8000
 ENV ENVIRONMENT=production
 ENV DATABASE_TYPE=sqlite
 ENV SQLITE_DATABASE_PATH=/app/db/app.db
+ENV UPLOAD_DIR=/app/uploads
 
 # Принудительное обновление кеша (изменяем при каждом деплое)
-ARG CACHE_BUST=2024-12-28-v4-fixed-port
+ARG CACHE_BUST=2024-12-28-v5-multipart
 RUN echo "Cache bust: $CACHE_BUST"
 
 # Здоровье контейнера (Railway делает свой healthcheck)

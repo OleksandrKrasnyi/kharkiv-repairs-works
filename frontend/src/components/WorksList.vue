@@ -239,6 +239,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Модальное окно просмотра работы -->
+    <WorkViewModal
+      :is-visible="showWorkModal"
+      :work="selectedWork"
+      @close="closeWorkModal"
+      @work-updated="onWorkUpdated"
+    />
   </div>
 </template>
 
@@ -248,11 +256,13 @@ import { useApi } from '../composables/useApi.js';
 import { useMap } from '../composables/useMap.js';
 import { useNotifications } from '../composables/useNotifications.js';
 import StreetSearch from './StreetSearch.vue';
+import WorkViewModal from './WorkViewModal.vue';
 
 export default {
   name: 'WorksList',
   components: {
-    StreetSearch
+    StreetSearch,
+    WorkViewModal
   },
   setup() {
     // Composables
@@ -265,6 +275,10 @@ export default {
     const workTypes = ref([]);
     const sortBy = ref('created_at');
     const sortOrder = ref('desc');
+
+    // Состояние модального окна
+    const showWorkModal = ref(false);
+    const selectedWork = ref({});
 
     const filters = reactive({
       status: '',
@@ -429,8 +443,36 @@ export default {
       }
     };
 
-    const editWork = () => {
-      showError('Редагування робіт буде реалізовано пізніше');
+    const editWork = async work => {
+      try {
+        // Получаем полные данные о работе с сервера
+        const fullWork = await api.getRepairWork(work.id);
+        selectedWork.value = fullWork;
+        showWorkModal.value = true;
+      } catch (error) {
+        console.error('Ошибка загрузки деталей работы:', error);
+        showError('Помилка завантаження деталей роботи');
+      }
+    };
+
+    const closeWorkModal = () => {
+      showWorkModal.value = false;
+      selectedWork.value = {};
+    };
+
+    const onWorkUpdated = updatedWork => {
+      // Обновляем данные в списке
+      const index = allRepairWorks.value.findIndex(work => work.id === updatedWork.id);
+      if (index !== -1) {
+        allRepairWorks.value[index] = updatedWork;
+      }
+
+      // Обновляем выбранную работу в модальном окне
+      selectedWork.value = updatedWork;
+
+      // Обновляем работу на карте
+      map.removeWorkFromMap(updatedWork.id);
+      map.addWorkToMap(updatedWork);
     };
 
     const toggleFilters = () => {
@@ -557,10 +599,16 @@ export default {
       hasActiveFilters,
       activeFiltersCount,
 
+      // Состояние модального окна
+      showWorkModal,
+      selectedWork,
+
       // Методы (упрощенные)
       fetchRepairWorks,
       deleteWork,
       editWork,
+      closeWorkModal,
+      onWorkUpdated,
       toggleFilters,
       resetFilters,
       setSortParameters,

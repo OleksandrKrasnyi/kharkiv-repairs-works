@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .database import check_db_connection, create_tables
-from .routers import repair_works, streets, work_types
+from .routers import repair_works, repair_work_photos, streets, work_types
 from .utils.exceptions import BaseAPIException
 
 # Настройка логирования
@@ -141,12 +141,17 @@ app.include_router(
     repair_works.router, prefix="/api/v1/repair-works", tags=["Repair Works"]
 )
 
+app.include_router(repair_work_photos.router, tags=["Repair Work Photos"])
+
 app.include_router(streets.router, prefix="/api/v1/streets", tags=["Streets"])
 
 
-# Статические файлы  
-app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
-app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+# Статические файлы (только если директории существуют)
+if os.path.exists("frontend/static"):
+    app.mount("/static", StaticFiles(directory="frontend/static"), name="static")
+
+if os.path.exists("frontend/dist/assets"):
+    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 
 # Health check (ВАЖНО: должен быть ПЕРЕД fallback роутом)
@@ -163,11 +168,20 @@ async def health_check():
     }
 
 
-# Главная страница
+# Главная страница (только в продакшене)
 @app.get("/", include_in_schema=False)
 async def read_root():
     """Главная страница приложения"""
-    return FileResponse("frontend/dist/index.html")
+    if settings.is_production and os.path.exists("frontend/dist/index.html"):
+        return FileResponse("frontend/dist/index.html")
+    else:
+        return {
+            "message": "Kharkiv Repairs API",
+            "version": settings.app_version,
+            "environment": settings.environment,
+            "docs": "/docs" if settings.is_development else "disabled",
+            "health": "/health"
+        }
 
 
 # SPA fallback - возвращаем index.html для всех неизвестных путей
@@ -182,7 +196,9 @@ async def spa_fallback(path: str):
         path.startswith("assets/") or
         path in ["health", "docs", "redoc", "openapi.json"]
     ):
-        return FileResponse("frontend/dist/index.html")
+        # Возвращаем index.html только в продакшене
+        if settings.is_production and os.path.exists("frontend/dist/index.html"):
+            return FileResponse("frontend/dist/index.html")
     
     # Для остальных путей возвращаем 404
     return JSONResponse(

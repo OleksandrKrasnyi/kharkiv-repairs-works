@@ -149,9 +149,12 @@ export default {
         showSuccess('Тип роботи успішно створено!');
       } catch (error) {
         console.error('Ошибка создания типа работы:', error);
-        showError(
-          'Помилка створення типу роботи: ' + (error.message || 'Невідома помилка')
-        );
+
+        const errorMessage = error.getUserMessage
+          ? error.getUserMessage()
+          : error.message || 'Невідома помилка';
+
+        showError(errorMessage);
       }
     };
 
@@ -177,9 +180,12 @@ export default {
         showSuccess('Тип роботи успішно оновлено!');
       } catch (error) {
         console.error('Ошибка обновления типа работы:', error);
-        showError(
-          'Помилка оновлення типу роботи: ' + (error.message || 'Невідома помилка')
-        );
+
+        const errorMessage = error.getUserMessage
+          ? error.getUserMessage()
+          : error.message || 'Невідома помилка';
+
+        showError(errorMessage);
       }
     };
 
@@ -192,24 +198,18 @@ export default {
     };
 
     const deleteWorkType = async typeId => {
-      if (
-        !confirm(
-          'Ви впевнені, що хочете видалити цей тип роботи? Це може вплинути на існуючі роботи.'
-        )
-      ) {
-        return;
-      }
-
       try {
         await api.deleteWorkType(typeId);
         workTypes.value = workTypes.value.filter(type => type.id !== typeId);
-
         showSuccess('Тип роботи успішно видалено');
       } catch (error) {
         console.error('Ошибка удаления типа работы:', error);
-        showError(
-          'Помилка видалення типу роботи: ' + (error.message || 'Невідома помилка')
-        );
+
+        const errorMessage = error.getUserMessage
+          ? error.getUserMessage()
+          : error.message || 'Невідома помилка';
+
+        showError(errorMessage);
       }
     };
 

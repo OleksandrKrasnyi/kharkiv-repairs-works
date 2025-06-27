@@ -5,11 +5,30 @@
 
 // Базовая конфигурация API
 const API_CONFIG = {
-  BASE_URL: window.location.hostname === 'localhost' ? 'http://localhost:8000' : '',
+  BASE_URL: getApiBaseUrl(),
   TIMEOUT: 30000,
   RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 1000
 };
+
+/**
+ * Определяет базовый URL для API в зависимости от окружения
+ */
+function getApiBaseUrl() {
+  // Проверяем, работаем ли мы в режиме разработки
+  const isDevelopment =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1' ||
+    window.location.port === '3000';
+
+  if (isDevelopment) {
+    // В локальной разработке используем полный URL к бекенду
+    return 'http://localhost:8000';
+  } else {
+    // В продакшене используем относительные URL (тот же домен)
+    return '';
+  }
+}
 
 /**
  * Утилиты для работы с HTTP запросами
@@ -164,6 +183,7 @@ class ApiError extends Error {
    */
   getUserMessage() {
     if (this.status >= 400 && this.status < 500) {
+      // Если это массив ошибок валидации (обычно 422)
       if (Array.isArray(this.details)) {
         return this.details
           .map(err => {
@@ -180,6 +200,18 @@ class ApiError extends Error {
           })
           .join(', ');
       }
+
+      // Если это строка с детальным сообщением (например, от BusinessLogicError)
+      if (typeof this.details === 'string') {
+        return this.details;
+      }
+
+      // Если это объект с полем detail
+      if (this.details && this.details.detail) {
+        return this.details.detail;
+      }
+
+      // Возвращаем детали или основное сообщение
       return this.details || this.message;
     }
 
@@ -291,6 +323,13 @@ class ApiService {
   }
 
   /**
+   * Получить одну ремонтную работу по ID
+   */
+  async getRepairWork(workId) {
+    return this.http.get(`/api/v1/repair-works/${workId}`);
+  }
+
+  /**
    * Создать новую ремонтную работу
    */
   async createRepairWork(workData) {
@@ -309,6 +348,55 @@ class ApiService {
    */
   async deleteRepairWork(workId) {
     return this.http.delete(`/api/v1/repair-works/${workId}`);
+  }
+
+  // === ФОТОГРАФИИ РЕМОНТНЫХ РАБОТ ===
+
+  // Получить все фотографии ремонтной работы
+  async getRepairWorkPhotos(workId) {
+    return this.http.get(`/api/v1/repair-works/${workId}/photos`);
+  }
+
+  // Загрузить фотографию для ремонтной работы
+  async uploadRepairWorkPhoto(workId, file, description = '', sortOrder = 0) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+      formData.append('description', description);
+    }
+    formData.append('sort_order', sortOrder.toString());
+
+    const response = await fetch(
+      `${this.http.baseURL}/api/v1/repair-works/${workId}/photos`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  // Обновить информацию о фотографии
+  async updateRepairWorkPhoto(workId, photoId, updateData) {
+    return this.http.put(
+      `/api/v1/repair-works/${workId}/photos/${photoId}`,
+      updateData
+    );
+  }
+
+  // Удалить фотографию
+  async deleteRepairWorkPhoto(workId, photoId) {
+    return this.http.delete(`/api/v1/repair-works/${workId}/photos/${photoId}`);
+  }
+
+  // Получить URL для скачивания/просмотра фотографии
+  getRepairWorkPhotoUrl(workId, photoId) {
+    return `${this.http.baseURL}/api/v1/repair-works/${workId}/photos/${photoId}/download`;
   }
 }
 

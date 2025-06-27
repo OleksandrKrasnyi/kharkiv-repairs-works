@@ -201,14 +201,24 @@ class WorkTypeService:
         work_type = self.get_by_id(work_type_id)
 
         # Проверяем, используется ли тип работы
-        if len(work_type.repair_works) > 0:
+        repair_works_count = len(work_type.repair_works)
+        if repair_works_count > 0:
             logger.warning(
                 "Cannot delete work type with associated repair works",
                 work_type_id=work_type_id,
-                repair_works_count=len(work_type.repair_works),
+                repair_works_count=repair_works_count,
             )
+            
+            # Формируем информативное сообщение с правильным склонением
+            if repair_works_count == 1:
+                works_word = "роботі"
+            elif repair_works_count < 5:
+                works_word = "роботах"
+            else:
+                works_word = "роботах"
+            
             raise BusinessLogicError(
-                f"Нельзя удалить тип работы, используемый в {len(work_type.repair_works)} ремонтных работах"
+                f"Неможливо видалити тип роботи '{work_type.name}', оскільки він використовується в {repair_works_count} ремонтних {works_word}."
             )
 
         try:

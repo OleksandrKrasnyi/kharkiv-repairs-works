@@ -33,6 +33,7 @@ dependencies = [
     "sentry-sdk[fastapi]>=1.40.0",
     "aiofiles>=24.1.0",
     "shapely>=2.1.1",
+    "python-multipart>=0.0.20",
 ]
 
 [project.optional-dependencies]
